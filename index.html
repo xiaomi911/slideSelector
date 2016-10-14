@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>Document</title>
+    <style>
+        *{
+            box-sizing: border-box;
+        }
+        p{
+            margin: 0;
+        }
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .container{
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .show{
+            display: block !important;
+        }
+        .mask-layer{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,.7);
+            display: none;
+        }
+        .slide-selector{
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 270px;
+            overflow: auto;
+            background: #fff;
+            transform: translate3d(0,100%,0);
+            transition: transform .3s linear;
+        }
+        .slide-active{
+            transform: translate3d(0,0,0);
+        }
+        .slide-header{
+            height: 44px;
+            line-height: 44px;
+            text-align: center;
+            position: relative;
+            background: lightgoldenrodyellow;
+        }
+        .slide-cancel{
+            position: absolute;
+            right: 0;
+            top: 0;
+            padding: 8px;
+            margin:5px;
+            border: 1px solid #eee;
+            font-size: .8rem;
+            line-height: 1;
+        }
+        .slide-option{
+            border-bottom: 1px solid #bbb;
+            line-height: 2.4;
+            text-indent: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hit-me">点我</div>
+
+        <div class="mask-layer"></div>
+
+    </div>
+
+    <script>
+        var slideSelector = function(){
+
+            this.init();
+        };
+        slideSelector.prototype = {
+            init:function(){
+
+                if(!document.querySelector('.slide-selector')){
+                    var _div = document.createElement('div');
+                    _div.className = 'slide-selector';
+                    this.wrapper = _div;
+                    document.querySelector('.container').appendChild(_div);
+                }else{
+                    this.wrapper = document.querySelector('.slide-selector');
+                }
+
+                this.bindEvent();
+            },
+            tpl: '<header class="slide-header"><div class="slide-title">{title}</div><span class="slide-cancel">取消</span></header>'+
+            '<div class="slide-options">{content}</div>',
+            bindEvent:function(){
+                var that = this;
+
+                this.wrapper.addEventListener('click',function(e){
+                    var ev = e || window.event, target = ev.target || ev.srcElement;
+                    if(target.tagName.toUpperCase() == "P"){
+                        var selectedData = target.getAttribute('data');
+                        var txt = target.innerHTML;
+                        that.data.callback({
+                            selected:selectedData,
+                            txt:txt
+                        });
+                        that.hide();
+                        return;
+                    }
+                    if(target.className == 'slide-cancel'){
+                        that.hide()
+                    }
+
+                },false)
+            },
+            show:function(data){
+                this.data = data;
+                this.render();
+                this.wrapper.className = this.wrapper.className+' slide-active';
+                document.querySelector('.mask-layer').className
+                        = document.querySelector('.mask-layer').className+' show';
+            },
+            render:function(){
+                var _data = this.data, str='';
+                _data.data.forEach(function(v,i){
+                    str += '<p class="slide-option" data="'+i+'">'+v+'</p>';
+                });
+                this.tpl = this.tpl.replace('{title}',_data.title).replace('{content}',str);
+                this.wrapper.innerHTML = this.tpl;
+            },
+            hide:function(){
+                this.wrapper.className = this.wrapper.className.replace('slide-active','');
+                document.querySelector('.mask-layer').className=document.querySelector('.mask-layer').className.replace('show','');
+
+            }
+        };
+
+
+        var ss = new slideSelector();
+
+        document.querySelector('.hit-me').addEventListener('click',function(){
+            ss.show({
+                title:'information',
+                init: 1,
+                data:['1409FE.D','1407D','sadasd','sad'],
+                callback:function(selected){
+                    console.log(selected);
+
+                    document.querySelector('.hit-me').innerHTML = selected.txt;
+                }
+            });
+        },false)
+    </script>
+</body>
+</html>
